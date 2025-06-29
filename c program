@@ -1,0 +1,215 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#define pi 3.1416
+
+void calculator() {
+    int ch;
+    printf("\n--- Calculator ---\n");
+    printf("1. Arithmetic\n2. Trigonometric\n3. Exit\nEnter choice: ");
+    scanf("%d", &ch);
+
+    if (ch == 1) {
+        double a, b, res;
+        char op;
+        printf("Enter expression (e.g. 4 + 5): ");
+        scanf("%lf %c %lf", &a, &op, &b);
+        switch (op) {
+            case '+': res = a + b; break;
+            case '-': res = a - b; break;
+            case '*': res = a * b; break;
+            case '/': res = (b != 0) ? a / b : 0; break;
+            default: printf("Invalid operator\n"); return;
+        }
+        printf("Result: %.2lf\n", res);
+    } else if (ch == 2) {
+        double angle;
+        int type;
+        printf("Enter angle in degrees: ");
+        scanf("%lf", &angle);
+        angle = angle * pi / 180;
+        printf("1. sin\n2. cos\n3. tan\nEnter choice: ");
+        scanf("%d", &type);
+        switch (type) {
+            case 1: printf("sin = %.4lf\n", sin(angle)); break;
+            case 2: printf("cos = %.4lf\n", cos(angle)); break;
+            case 3: printf("tan = %.4lf\n", tan(angle)); break;
+            default: printf("Invalid type\n"); break;
+        }
+    } else {
+        printf("Exiting Calculator.\n");
+    }
+}
+
+void notepad() {
+    FILE *fp;
+    int choice;
+    char filename[50], text[500], word[50], replace[50];
+
+    printf("\n--- Notepad ---\n");
+    printf("1. Create File\n2. Append to File\n3. Read File\n4. Replace Word\nEnter choice: ");
+    scanf("%d", &choice);
+    getchar();
+
+    printf("Enter filename: ");
+    fgets(filename, sizeof(filename), stdin);
+    filename[strcspn(filename, "\n")] = '\0';
+
+    switch (choice) {
+        case 1:
+            fp = fopen(filename, "w");
+            printf("Enter text to write:\n");
+            fgets(text, sizeof(text), stdin);
+            fputs(text, fp);
+            fclose(fp);
+            break;
+        case 2:
+            fp = fopen(filename, "a");
+            printf("Enter text to append:\n");
+            fgets(text, sizeof(text), stdin);
+            fputs(text, fp);
+            fclose(fp);
+            break;
+        case 3:
+            fp = fopen(filename, "r");
+            if (fp == NULL) {
+                printf("File not found.\n");
+                break;
+            }
+            while (fgets(text, sizeof(text), fp))
+                printf("%s", text);
+            fclose(fp);
+            break;
+        case 4:
+            fp = fopen(filename, "r");
+            if (fp == NULL) {
+                printf("File not found.\n");
+                break;
+            }
+            FILE *temp = fopen("temp.txt", "w");
+            printf("Enter word to replace: ");
+            scanf("%s", word);
+            printf("Enter replacement: ");
+            scanf("%s", replace);
+
+            while (fscanf(fp, "%s", text) != EOF) {
+                if (strcmp(text, word) == 0)
+                    fprintf(temp, "%s ", replace);
+                else
+                    fprintf(temp, "%s ", text);
+            }
+            fclose(fp);
+            fclose(temp);
+            remove(filename);
+            rename("temp.txt", filename);
+            break;
+        default:
+            printf("Invalid choice.\n");
+            break;
+    }
+}
+
+void moneyTransfer(double *balance) {
+    char mobileNumber[20];
+    double amount;
+    printf("\n--- Money Transfer ---\n");
+    printf("Enter 10-digit mobile number: ");
+    scanf("%s", mobileNumber);
+
+    if (strlen(mobileNumber) != 10) {
+        printf("Invalid mobile number.\n");
+        return;
+    }
+
+    printf("Enter amount to transfer: ");
+    scanf("%lf", &amount);
+
+    if (amount > *balance) {
+        printf("Insufficient balance.\n");
+        return;
+    }
+
+    *balance -= amount;
+    printf("₹%.2lf transferred to %s successfully. Remaining balance: ₹%.2lf\n", amount, mobileNumber, *balance);
+}
+
+int login() {
+    FILE *fp = fopen("password.txt", "r");
+    char stored[20], entered[20];
+
+    if (fp == NULL) {
+        fp = fopen("password.txt", "w");
+        fprintf(fp, "admin123");
+        fclose(fp);
+        fp = fopen("password.txt", "r");
+    }
+
+    fscanf(fp, "%s", stored);
+    fclose(fp);
+
+    printf("Enter password: ");
+    scanf("%s", entered);
+
+    if (strcmp(stored, entered) == 0)
+        return 1;
+    else {
+        printf("Incorrect password.\n");
+        return 0;
+    }
+}
+
+void changePassword() {
+    char old[20], newp[20], confirm[20], stored[20];
+    FILE *fp = fopen("password.txt", "r");
+    fscanf(fp, "%s", stored);
+    fclose(fp);
+
+    printf("Enter old password: ");
+    scanf("%s", old);
+    if (strcmp(old, stored) != 0) {
+        printf("Wrong password.\n");
+        return;
+    }
+
+    printf("Enter new password: ");
+    scanf("%s", newp);
+    printf("Confirm new password: ");
+    scanf("%s", confirm);
+
+    if (strcmp(newp, confirm) == 0) {
+        fp = fopen("password.txt", "w");
+        fprintf(fp, "%s", newp);
+        fclose(fp);
+        printf("Password changed successfully.\n");
+    } else {
+        printf("Passwords do not match.\n");
+    }
+}
+
+int main() {
+    int choice;
+    double balance = 1000.0;
+
+    printf("Welcome! (%s)\n", __TIME__);
+
+    if (!login()) return 0;
+
+    do {
+        printf("\n--- Mini Device Menu ---\n");
+        printf("1. Calculator\n2. Notepad\n3. Money Transfer\n4. Change Password\n5. Exit\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: calculator(); break;
+            case 2: notepad(); break;
+            case 3: moneyTransfer(&balance); break;
+            case 4: changePassword(); break;
+            case 5: printf("Exiting program.\n"); break;
+            default: printf("Invalid choice.\n"); break;
+        }
+    } while (choice != 5);
+
+    return 0;
+}
