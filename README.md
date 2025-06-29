@@ -1,0 +1,1 @@
+Developed a console-based mini device using C with secure login and password management. Features include a file-based notepad (create, edit, read, replace), arithmetic and trigonometric calculator, and mobile money transfer with balance tracking using pointers. Implemented file handling and macro usage to simulate a multi-utility embedded system.
